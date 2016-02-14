@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:minWidth="36dp"
+                    android:minHeight="36dp"
+                    android:minResizeHeight="36dp"
+                    android:minResizeWidth="36dp"
+                    android:previewImage="@drawable/ic_keyboard_backspace_white_24dp"
+                    android:configure="com.ex.sunapp.simplegif.GifWidgetConfigure"
+
+                    android:updatePeriodMillis="0"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:initialLayout="@layout/widget_template"
+                    android:resizeMode="horizontal|vertical"
+    >
+
+</appwidget-provider>

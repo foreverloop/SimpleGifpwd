@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Simple Gif</string>
+    <string name="create_gif">Create Widget</string>
+    <string name="delete_gif">Delete Widget</string>
+    <string name="search">Search Files</string>
+    <string name="auto_search">Auto Search</string>
+    <string name="manual_search">Manual Search</string>
+    <string name="no_activity">No gallery app could be found to display images</string>
+    <string name="search_image_icon">small image icon</string>
+    <string name="search_results">Search Results</string>
+    <string name="gif_widget_home_imageview">gif widget home imageview</string>
+    <string name="gif_widget_number">Gif Widget %1$d</string>
+    <string name="frame_count">Frame count: %1$d</string>
+    <string name="active_widget">Active Widget %1$d</string>
+    <string name="decoding_warn">A gif is currently decoding, please wait</string>
+    <string name="not_active_widget">Not Active</string>
+    <string name="delete_all_gif">Delete All Widgets</string>
+    <string name="delete_mode_text">Simple Gif - Delete</string>
+    <string name="setup_mode_text">Simple Gif - Setup</string>
+    <string name="remove_delay_text">Simple Gif - Remove Delay</string>
+    <string name="add_delay_text">Simple Gif - Add Delay</string>
+    <string name="three_gif_limit">3 Widget limit reached, delete one before adding another</string>
+    <string name="delay_count">Delay (milliseconds): %1$d</string>
+    <string name="permission_not_granted">Cannot find Gif Images without permission</string>
+    <string name="gif_quality_setup">Setup</string>
+    <string name="add_delay">Add Delay</string>
+    <string name="less_delay">Remove Delay</string>
+    <string name="widget_main_image">widget image</string>
+    <string name="error_file_not_found">Error: gif not found at: %1$s, is this file deleted?</string>
+</resources>

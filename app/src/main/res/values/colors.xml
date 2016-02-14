@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#FBC02D</color>
+    <color name="colorPrimaryDark">#F9A825</color>
+    <color name="colorAccent">#00AD47</color>
+    <color name="fab_transit">#00BD47</color>
+    <color name="fab_ripp">#00C647</color>
+    <color name="delete_red_primary">#F44336</color>
+    <color name="red_primary">#DC1D00</color>
+    <color name="red_transit">#F60D00</color>
+    <color name="red_finished">#D70000</color>
+    <color name="delete_red_dark">#C62828</color>
+    <color name="blue_primary">#2962FF</color>
+    <color name="blue_transit">#448AFF</color>
+    <color name="blue_finished">#2979FF</color>
+    <color name="background_grey">#D1D1D1</color>
+    <color name="white">#FFFFFF</color>
+
+</resources>
