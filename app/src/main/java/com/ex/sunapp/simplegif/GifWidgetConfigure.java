@@ -21,7 +21,6 @@ import java.util.ArrayList;
 
 public class GifWidgetConfigure extends AppCompatActivity {
 
-    private static final String TAG = "SearchActivity";
     public static ArrayList<GifMeta> mGifMetaArrayList;
     private Toolbar mToolbar;
     private static final int READ_EXTERNAL_REQUEST = 12;
@@ -39,8 +38,6 @@ public class GifWidgetConfigure extends AppCompatActivity {
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-
-        Log.i(TAG,"true id: " + mAppWidgetId);
 
         mToolbar = (Toolbar) findViewById(R.id.app_b);
         mToolbar.setTitle(R.string.app_name);

@@ -123,6 +123,7 @@ public class SimpleGifDecodeService extends Service {
         int imageHeight = options.outHeight;
         int imageWidth = options.outWidth;
 
+        //if oom errors, this could be added as width / 2 and height / 2
         if(imageWidth >= width){
             return false;
         } else if (imageHeight >= height){

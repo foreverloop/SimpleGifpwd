@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +23,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class AutoSearchFragment extends Fragment {
-
-    private static final String TAG = "AutoSearchFr";
-    public static final String FILE_PATH_KEY = "AutoSearchFragment.FILE_PATH_KEY";
 
     private ArrayList<GifMeta> mGifMetaArrayList;
     private RecyclerView mRecyclerView;
@@ -47,9 +43,7 @@ public class AutoSearchFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mGifMetaArrayList = GifWidgetConfigure.mGifMetaArrayList;
-
         mAppWidId = getArguments().getInt(APP_WID_KEY);
-        Log.i(TAG, "appId in fragment: "  + mAppWidId);
     }
 
     @Nullable
@@ -88,26 +82,21 @@ public class AutoSearchFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent i = new Intent();
-            Log.i(TAG,"clicked a gif");
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity().getApplicationContext());
             RemoteViews views = new RemoteViews(getActivity().getPackageName(),
                     R.layout.widget_template);
             appWidgetManager.updateAppWidget(mAppWidId, views);
 
-            //store it as file path key + mWidId? but are they consistent?
-            //i.putExtra(FILE_PATH_KEY,mGifMeta.getFileName());
             i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,mAppWidId);
 
             Intent serviceIntnet = new Intent(getActivity().getApplicationContext(),SimpleGifDecodeService.class);
 
-            //tie the widgetId to the key we're storing the path with
             PATH_KEY = PATH_KEY + mAppWidId;
             serviceIntnet.putExtra(WID_ID_KEY,mAppWidId);
             serviceIntnet.putExtra(PATH_KEY,mGifMeta.getFileName());
             getActivity().startService(serviceIntnet);
 
             getActivity().setResult(Activity.RESULT_OK, i);
-            Log.i(TAG,"end gif click");
             getActivity().finish();
         }
     }

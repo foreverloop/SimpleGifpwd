@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 public class AutoSearch {
 
-    private static final String TAG = "AutoSearch";
     private ArrayList<GifMeta> mGifMetaArrayList;
     private Context mContext;
 
@@ -21,7 +20,6 @@ public class AutoSearch {
     public ArrayList<GifMeta> getGifList(){
         mGifMetaArrayList = new ArrayList<>();
         findAllGifs();
-        Log.i(TAG,"" + mGifMetaArrayList.size());
         return mGifMetaArrayList;
     }
 
