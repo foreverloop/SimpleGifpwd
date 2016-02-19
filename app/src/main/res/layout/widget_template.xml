@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_margin="0dp">
-
     <ImageView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/img_gif_wd"
         android:src="@drawable/ic_keyboard_backspace_white_24dp"
         android:contentDescription="@string/widget_main_image"
         android:adjustViewBounds="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent">
 
-</LinearLayout>
+</ImageView>

@@ -8,6 +8,15 @@ public class GifMeta {
     private int mWidgetNo;
     private int mHeight;
     private int mWidth;
+    private int mWidId;
+
+    public int getWidId() {
+        return mWidId;
+    }
+
+    public void setWidId(int widId) {
+        mWidId = widId;
+    }
 
     public int getHeight() {
         return mHeight;

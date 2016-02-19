@@ -16,7 +16,7 @@ import android.util.Log;
 public class SimpleGifWidgetProvider extends AppWidgetProvider {
 
     public static final String FILE_KEY = "SimpleGifWidKey";
-    private static final String GIF_PATH_KEY = "com.sunapp.simplegif.PATH1";
+    private static final String GIF_PATH_KEY = "com.sunapp.simplegif.PATH";
     private static final String GIF_FRAME_KEY = "com.sunapp.simplegif.FRAME1";
     private static final String GIF_DELAY_KEY = "com.sunapp.simplegif.DELAY1";
     private static final String GIF_NUMBER_KEY = "com.sunapp.simplegif.NUMBER1";
@@ -35,7 +35,7 @@ public class SimpleGifWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG,"Received something");
+
         if (filter == null) {
             filter = new IntentFilter();
         }
@@ -71,7 +71,7 @@ public class SimpleGifWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
-        Log.i(TAG,"opts changed");
+        Log.i(TAG, "opts changed");
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
     }
 
@@ -113,24 +113,49 @@ public class SimpleGifWidgetProvider extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
 
-        int inumwids = 0;
         int[] wids;
         AppWidgetManager am = AppWidgetManager.getInstance(context);
         wids = am.getAppWidgetIds(new ComponentName(context, SimpleGifWidgetProvider.class));
 
-        for (int id : wids) {
-            inumwids++;
+        for (int id : appWidgetIds) {
+            deleteSharedPrefs(context,id);
         }
 
-        if (inumwids == 0) {
-
+        if (wids.length == 0) {
             alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Intent in2 = new Intent(context, SimpleGifDecodeService.class);
             in2.putExtra(FILE_KEY, pathToUse);
             in2.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
             context.stopService(in2);
-
         }
+
+        /** later remove...*/
+        printShared(context);
         super.onDeleted(context, appWidgetIds);
+    }
+
+    public void printShared(Context context){
+
+        int[] wids;
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        AppWidgetManager aw = AppWidgetManager.getInstance(context);
+        wids = aw.getAppWidgetIds(new ComponentName(context, SimpleGifWidgetProvider.class));
+
+        Log.i(TAG,"before loop");
+        for(int id : wids){
+            Log.i(TAG,"got shared prefs for..." + pref.contains(GIF_PATH_KEY + String.valueOf(id)));
+        }
+
+    }
+
+    private void deleteSharedPrefs(Context context, int widgetno){
+        final String pathKey = GIF_PATH_KEY + String.valueOf(widgetno);
+        Log.i(TAG,"deleted: " + pathKey);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.remove(pathKey);
+        editor.apply();
+
+        Log.i(TAG,"can get? " + pref.getString(pathKey,"did not get"));
     }
 }

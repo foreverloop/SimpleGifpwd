@@ -1,6 +1,7 @@
 package com.ex.sunapp.simplegif;
 
 import android.Manifest;
+import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,7 +31,7 @@ public class GifWidgetConfigure extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gif_config_activity);
-
+        setResult(Activity.RESULT_CANCELED);
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {

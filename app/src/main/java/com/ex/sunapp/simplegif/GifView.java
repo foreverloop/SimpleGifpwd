@@ -37,6 +37,8 @@ public class GifView extends View {
     private int resId;
     private String filePath;
     private GifDecoder twin;
+    private int mCurrentFrame;
+    private int mMaxFrame;
 
     private boolean playFlag = false;
     public static final String TAG = "GifDecoder";
@@ -150,12 +152,25 @@ public class GifView extends View {
                 time = System.currentTimeMillis();
 
                 decodeStatus = DECODE_STATUS_DECODED;
+                mMaxFrame = getFrameNum();
             }
         }.start();
     }
 
     public void release() {
         decoder = null;
+    }
+
+    public int getMaxFrame() {
+        return mMaxFrame;
+    }
+
+    public int getCurrentFrame() {
+        return mCurrentFrame;
+    }
+
+    public void setCurrentFrame(int currentFrame) {
+        mCurrentFrame = currentFrame;
     }
 
     @Override

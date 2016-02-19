@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.*;
 import android.os.Process;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SimpleGifDecodeService extends Service {
 
@@ -27,122 +30,162 @@ public class SimpleGifDecodeService extends Service {
     private int mAppWidId;
     private static String PATH_KEY = "com.ex.sunapp.PATH_KEY";
     private static String WID_ID_KEY = "com.ex.sunapp.WID_ID_KEY";
-    private HashMap<Integer,String> mPathMap;
+    private static String GIF_PATH_KEY = "com.sunapp.simplegif.PATH";
+    private ConcurrentHashMap<Integer,String> mPathMap;
+    private HashMap<Integer,GifView> mGifViewMap;
+    private HashMap<Integer,Integer> mDelayMap;
+    private HashMap<Integer,Integer> mHeightMap;
+    private HashMap<Integer,Integer> mWidthMap;
     public GifView mGifView;
-    public AppWidgetManager app;
-    Bitmap b;
-    Bitmap icon;
-    Bitmap scaled;
     String LastHeapWith;
-    private String sharedPath;
-    int prevHeight;
-    int prevWidth;
-    int curHeight;
-    int curWidth;
-    int numappwids;
-    int inumtimes;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-    private static final String GIF_PATH_KEY = "com.sunapp.simplegif.PATH1";
-    private static final String GIF_DELAY_KEY = "com.sunapp.simplegif.DELAY1";
-    private static String GIF_HEIGHT_KEY = "com.sunapp.simplegif.HEIGHT1";
-    private static String GIF_WIDTH_KEY = "com.sunapp.simplegif.WIDTH1";
-    private String mSharedPath;
-    private static final String TAG = "DecodeService";
+    private int mDelay;
 
+    /**
+     * runnable to be posted to background handler used to decode gif
+     * */
     private Runnable DecodeGif = new Runnable() {
         @Override
         public void run() {
 
             mServiceHandler.removeCallbacks(this);
+            int widgetno = 0;
 
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            //mSharedPath = preferences.getString(GIF_PATH_KEY, "");
-
-            //if(!mPath.equals("")) {
-            //    File f = new File(mPath);
-               // if (f.exists()) {
-                    //Log.i(TAG,"decoding...");
                     Iterator it = mPathMap.entrySet().iterator();
                     while (it.hasNext()) {
-                        Log.i(TAG, "in while loop...");
                         Map.Entry pair = (Map.Entry)it.next();
-                        System.out.println(pair.getKey() + " = " + pair.getValue());
-                        //it.remove(); // avoids a ConcurrentModificationException
                         File fi = new File(pair.getValue().toString());
-
                         if(fi.exists()) {
                             getBitmap(pair.getValue().toString(), (int) pair.getKey());
+                            widgetno = (int) pair.getKey();
                         } else {
                                  Resources res = getResources();
 
                                  Toast.makeText(getApplicationContext(),
                                          res.getString(R.string.error_file_not_found, fi.toString()),
                                          Toast.LENGTH_LONG).show();
+                            return;
                         }
                     }
 
-
+            if(mDelayMap != null && widgetno  > 0)
+                mDelay = mDelayMap.get(widgetno);
                     if(mServiceHandler != null) {
-                        mServiceHandler.postDelayed(this, preferences.getInt(GIF_DELAY_KEY, 100));
-                        Log.i(TAG, "repost");
+                        if(mDelay == 0)
+                            mDelay = 100;
+                        mServiceHandler.postDelayed(this, mDelay);
                     }
-                    //handle no iamge or valid handler
-                //}
-               // else {
-               //     Resources res = getResources();
-
-               //     Toast.makeText(getApplicationContext(), res.getString(R.string.error_file_not_found, mPath),
-                //            Toast.LENGTH_LONG).show();
-                    //return;
                 }
-            //}
-       // }
     };
 
-    // Handler that receives messages from the thread
+    /**
+     * Handler that receives messages from the thread
+     * */
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
             super(looper);
         }
     }
 
-    public void getBitmap(String path, int widId){
+    /**
+     * check Hashmaps exist and create if required
+     * */
+    private void checkMaps(){
+        if(mGifViewMap == null)
+            mGifViewMap = new HashMap<>();
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(mDelayMap == null)
+            mDelayMap = new HashMap<>();
 
-        //if(!preferences.getString(GIF_PATH_KEY, "").equals("")) {
-            //sharedPath = preferences.getString(GIF_PATH_KEY, "");
-            sharedPath = path;
-            if(!sharedPath.equals(LastHeapWith))
-                mGifView = null;
-        //}
+        if(mHeightMap == null)
+            mHeightMap = new HashMap<>();
 
-        if(mGifView == null){
+        if(mWidthMap == null)
+            mWidthMap = new HashMap<>();
 
-            mGifView = new GifView(getApplicationContext());
+    }
 
-            if(prevWidth == 0)
-                prevWidth = 80;
-            if(prevHeight == 0)
-                prevHeight = 80;
-            Log.i(TAG,"not called every time");
-            icon = AutoSearchFragment.decodeSampledBitmapFromResource(sharedPath,prevWidth,prevHeight);
-            //icon = BitmapFactory.decodeFile(sharedPath);
+    /**
+     * verify Gif image is not larger than screen, should prevent some oom errors
+     */
+    private boolean verifySafeSize(String path){
 
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) this.getSystemService(Service.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(displaymetrics);
+        int width = displaymetrics.widthPixels;
+        int height = displaymetrics.heightPixels;
 
-            mGifView.setGif(sharedPath, icon);
-            mGifView.decode();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path,options);
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+
+        if(imageWidth >= width){
+            return false;
+        } else if (imageHeight >= height){
+            return false;
         }
 
-        LastHeapWith = sharedPath;
+        return true;
+    }
 
-        while (mGifView.decodeStatus != 2) {
+    /**
+     * called only off background thread, decodes Gif and updates widgets with relevant image
+     */
+    private void getBitmap(String path, int widId){
+
+        int prevHeight = 1;
+        int prevWidth = 1;
+        Bitmap b;
+        Bitmap icon;
+        checkMaps();
+
+        if(!path.equals(LastHeapWith) && mGifViewMap.get(widId) == null){
+            mGifView = new GifView(getApplicationContext());
+            mGifViewMap.put(widId,mGifView);
+
+            if(verifySafeSize(path)) {
+                try {
+                    icon = BitmapFactory.decodeFile(path);
+                    prevHeight = icon.getHeight();
+                    prevWidth = icon.getWidth();
+                    mHeightMap.put(widId, prevHeight);
+                    mWidthMap.put(widId, prevWidth);
+                    mGifView.setGif(path, icon);
+                    mGifView.decode();
+                } catch (OutOfMemoryError oom) {
+                    Toast.makeText(this, R.string.oom, Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+
+        } else {
+            mGifView = mGifViewMap.get(widId);
+            prevHeight = mHeightMap.get(widId);
+            prevWidth = mWidthMap.get(widId);
+        }
+
+        LastHeapWith = path;
+
+        if(mGifView == null)
+            return;
+
+        while (mGifView.decodeStatus != 2){
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+
+        if(!mDelayMap.containsKey(widId)) {
+            mDelay = mGifView.getDelayTime(mGifView.getFrameNum() - 1);
+            mDelayMap.put(widId, mDelay);
+        } else {
+            mDelay = mDelayMap.get(widId);
         }
 
         mGifView.destroyDrawingCache();
@@ -151,74 +194,33 @@ public class SimpleGifDecodeService extends Service {
         mGifView.invalidate();
         mGifView.buildDrawingCache(true);
 
-        //int twidth = preferences.getInt(GIF_WIDTH_KEY,400);
-        //int theight = preferences.getInt(GIF_HEIGHT_KEY,300);
-
-        //Bitmap bit = Bitmap.createBitmap(preferences.getInt(GIF_WIDTH_KEY, 400),
-        //       preferences.getInt(GIF_HEIGHT_KEY, 300), Bitmap.Config.ARGB_8888);
-
-        //Bitmap bit = Bitmap.createBitmap(400,
-        //    300, Bitmap.Config.ARGB_8888);
-        Log.i(TAG,"bitmap frame constructed");
-        Bitmap bit = Bitmap.createBitmap(400,300,Bitmap.Config.ARGB_8888);
-        //Bitmap bit = AutoSearchFragment.decodeSampledBitmapFromResource(mSharedPath,prevWidth,prevHeight);
-        //Bitmap mutableBitmap = bit.copy(Bitmap.Config.ARGB_8888, true);
-
+        Bitmap bit = Bitmap.createBitmap(prevWidth,prevHeight, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bit);
 
-        mGifView.layout(0, 0, mGifView.getMeasuredWidth(), mGifView.getMeasuredHeight());
-
+        mGifView.layout(0, 0, mGifView.getWidth() , mGifView.getHeights() );
         mGifView.draw(c);
-
         b = bit;
-        bit = null;
 
-        final AppWidgetManager appWidgetMan = AppWidgetManager.getInstance(getApplicationContext());
-
-        int[] appWidgetIDs = appWidgetMan
-                .getAppWidgetIds(new ComponentName(getApplicationContext(), SimpleGifWidgetProvider.class));
+        final AppWidgetManager awm = AppWidgetManager.getInstance(getApplicationContext());
+        int[] appWidgetIDs = awm.getAppWidgetIds(new ComponentName(getApplicationContext(), SimpleGifWidgetProvider.class));
 
         final RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_template);
 
-        if(appWidgetIDs != null) {
+        if(appWidgetIDs != null)
+            views.setImageViewBitmap(R.id.img_gif_wd,b);
 
-            for (int e = 0; e < appWidgetIDs.length; e++) {
-                numappwids++;
-                Bundle ops = appWidgetMan.getAppWidgetOptions(appWidgetIDs[e]);
-
-                curHeight = ops.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-                curWidth = ops.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
-
-                //if(curHeight < curWidth || curWidth > curHeight)
-                if((prevHeight != curHeight) || (prevWidth != curWidth)){
-
-                    //source was false
-                    scaled = Bitmap.createScaledBitmap(b,(curWidth * 2),(curHeight * 2),true);
-                    b = scaled;
-                }
-
-                prevHeight = ops.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-                prevWidth = ops.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-
-                if(b != null)
-                    views.setImageViewBitmap(R.id.img_gif_wd,b);
-            }
-        }
-
-        //these concurrency issues are happens probably because of the shared variables
-        appWidgetMan.updateAppWidget(widId,views);
-        appWidgetMan.updateAppWidget(appWidgetIDs, views);
+        awm.updateAppWidget(widId, views);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        //required as part of extending service class
         return null;
     }
 
     @Override
     public void onCreate() {
-        //decode gifs off UI thread, huge improvement over SimpleGifService
         HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         mServiceLooper = thread.getLooper();
@@ -227,43 +229,71 @@ public class SimpleGifDecodeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
 
-        inumtimes++;
+        int[] widgets;
         AppWidgetManager aw = AppWidgetManager.getInstance(getApplicationContext());
 
         aw.updateAppWidget(aw.getAppWidgetIds(new ComponentName(getApplicationContext(), SimpleGifWidgetProvider.class)),
                 new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_template));
 
-        mAppWidId = intent.getIntExtra(WID_ID_KEY,0);
-        PATH_KEY = PATH_KEY + mAppWidId;
-        mPath = intent.getStringExtra(PATH_KEY);
-        Log.i(TAG,"path: " + mPath);
+        //if we came from the activity
+        if(intent != null) {
+            mAppWidId = intent.getIntExtra(WID_ID_KEY, 0);
+            PATH_KEY = PATH_KEY + mAppWidId;
+            mPath = intent.getStringExtra(PATH_KEY);
+        }
 
-        if(mPathMap == null)
-            mPathMap = new HashMap<>();
+        //if we came from a broadcast
+        if(mAppWidId == 0) {
+            if(mPathMap == null)
+                mPathMap = new ConcurrentHashMap<>();
+            widgets = aw.getAppWidgetIds(new ComponentName(this, SimpleGifWidgetProvider.class));
+            for(int wid : widgets){
+               mPathMap.put(wid,findExistingWidgets(wid));
+                mServiceHandler.postDelayed(DecodeGif,100);
+            }
+        } else {
+            if(mPathMap == null)
+                mPathMap = new ConcurrentHashMap<>();
 
-        //try to serialize later
-        mPathMap.put(mAppWidId,mPath);
+            if (mAppWidId > 0) {
+                mPathMap.put(mAppWidId, mPath);
+                mServiceHandler.postDelayed(DecodeGif, 100);
+                updateSharedPrefs(mPath,1,mAppWidId);
+            }
+        }
 
-        //add path we got to array, map or some sort of storage
-        //wrap the calls to post delayed in a for each widget loop
-        //pass in the paths as a variable, so the runnable runs seperately for each widget
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        mServiceHandler.postDelayed(DecodeGif,preferences.getInt(GIF_DELAY_KEY,100));
         Intent ReceIntent = new Intent(getApplicationContext(),SimpleGifWidgetProvider.class);
         getApplicationContext().sendBroadcast(ReceIntent);
-
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         mServiceHandler.removeCallbacks(DecodeGif);
         mServiceHandler = null;
     }
 
+    private void updateSharedPrefs(String path, int mode, int widgetno){
+        //mode = 0 to remove, 1 to add/update
+        final String pathKey = GIF_PATH_KEY + String.valueOf(widgetno);
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        SharedPreferences.Editor editor = pref.edit();
+        pref.getAll();
+        if(mode == 1){
+            editor.putString(pathKey, path);
+            editor.apply();
+        } else if (mode == 0){
+            editor.remove(pathKey);
+            editor.apply();
+        }
+    }
+
+    private String findExistingWidgets(int widgetId){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        final String pathKey = GIF_PATH_KEY + String.valueOf(widgetId);
+        return pref.getString(pathKey,"");
+    }
 }
+
