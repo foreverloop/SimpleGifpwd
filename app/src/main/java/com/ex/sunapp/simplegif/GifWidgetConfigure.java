@@ -138,8 +138,6 @@ public class GifWidgetConfigure extends AppCompatActivity {
                 mNoGifsLayout.setVisibility(View.VISIBLE);
                 mNoImageView.setVisibility(View.VISIBLE);
             }
-
-
         }
     }
 }
