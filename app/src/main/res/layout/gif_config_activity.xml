@@ -9,6 +9,23 @@
 
     </include>
 
+        <LinearLayout
+        android:id="@+id/gravity_no_image_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+            android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/gifs_not_found"
+        android:contentDescription="@string/gif_widget_home_imageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/no_files_found"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/fragment_container_search"
         android:layout_width="wrap_content"

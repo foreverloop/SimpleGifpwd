@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class AutoSearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mGifMetaArrayList = GifWidgetConfigure.mGifMetaArrayList;
         mAppWidId = getArguments().getInt(APP_WID_KEY);
+
     }
 
     @Nullable
@@ -54,7 +56,6 @@ public class AutoSearchFragment extends Fragment {
         mRecyclerView = (RecyclerView) v.findViewById(R.id.auto_list_recyclerview);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(new GifListAdapter(mGifMetaArrayList));
-
 
         return v;
     }

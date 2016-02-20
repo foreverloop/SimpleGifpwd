@@ -19,6 +19,7 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class SimpleGifDecodeService extends Service {
                     while (it.hasNext()) {
                         Map.Entry pair = (Map.Entry)it.next();
                         File fi = new File(pair.getValue().toString());
+                        widgetno = (int) pair.getKey();
                         if(fi.exists()) {
                             getBitmap(pair.getValue().toString(), (int) pair.getKey());
                             widgetno = (int) pair.getKey();
@@ -65,7 +67,17 @@ public class SimpleGifDecodeService extends Service {
                                  Toast.makeText(getApplicationContext(),
                                          res.getString(R.string.error_file_not_found, fi.toString()),
                                          Toast.LENGTH_LONG).show();
-                            return;
+
+                            updateSharedPrefs(mPathMap.get(widgetno), 0, widgetno);
+                            mPathMap.remove(widgetno);
+                            mDelayMap.remove(widgetno);
+                            mHeightMap.remove(widgetno);
+                            mWidthMap.remove(widgetno);
+                            mGifViewMap.remove(widgetno);
+
+                            //no more active gifs
+                            if(mPathMap.size() == 0)
+                                stopSelf();
                         }
                     }
 
@@ -103,7 +115,27 @@ public class SimpleGifDecodeService extends Service {
 
         if(mWidthMap == null)
             mWidthMap = new HashMap<>();
+    }
 
+    private void cleanUpMaps(int[] widgetIds){
+
+        ArrayList<Integer> nonPrim = new ArrayList<>();
+
+        for(int i : widgetIds){
+            nonPrim.add(i);
+        }
+
+        for(int key : mPathMap.keySet()) {
+
+            if(nonPrim.contains(key))
+                continue;
+
+            mPathMap.remove(key);
+            mHeightMap.remove(key);
+            mWidthMap.remove(key);
+            mDelayMap.remove(key);
+            mGifViewMap.remove(key);
+        }
     }
 
     /**
@@ -144,7 +176,7 @@ public class SimpleGifDecodeService extends Service {
         Bitmap icon;
         checkMaps();
 
-        if(!path.equals(LastHeapWith) && mGifViewMap.get(widId) == null){
+        if(mGifViewMap.get(widId) == null){
             mGifView = new GifView(getApplicationContext());
             mGifViewMap.put(widId,mGifView);
 
@@ -188,6 +220,8 @@ public class SimpleGifDecodeService extends Service {
         } else {
             mDelay = mDelayMap.get(widId);
         }
+
+        //Log.i("Service:", "pathMapSize: " + mPathMap.size());
 
         mGifView.destroyDrawingCache();
         mGifView.setDrawingCacheEnabled(true);
@@ -237,6 +271,9 @@ public class SimpleGifDecodeService extends Service {
         aw.updateAppWidget(aw.getAppWidgetIds(new ComponentName(getApplicationContext(), SimpleGifWidgetProvider.class)),
                 new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_template));
 
+        widgets = aw.getAppWidgetIds(new ComponentName(this, SimpleGifWidgetProvider.class));
+
+
         //if we came from the activity
         if(intent != null) {
             mAppWidId = intent.getIntExtra(WID_ID_KEY, 0);
@@ -262,6 +299,7 @@ public class SimpleGifDecodeService extends Service {
                 mServiceHandler.postDelayed(DecodeGif, 100);
                 updateSharedPrefs(mPath,1,mAppWidId);
             }
+            cleanUpMaps(widgets);
         }
 
         Intent ReceIntent = new Intent(getApplicationContext(),SimpleGifWidgetProvider.class);

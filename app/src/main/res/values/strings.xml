@@ -7,4 +7,5 @@
     <string name="widget_main_image">widget image</string>
     <string name="error_file_not_found">Error: gif not found at: %1$s, is this file deleted?</string>
     <string name="oom">Image too big for this device!</string>
+    <string name="refresh_list">Refresh</string>
 </resources>
