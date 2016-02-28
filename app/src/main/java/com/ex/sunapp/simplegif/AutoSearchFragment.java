@@ -12,14 +12,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -95,7 +93,7 @@ public class AutoSearchFragment extends Fragment {
             Intent serviceIntnet = new Intent(getActivity().getApplicationContext(),SimpleGifDecodeService.class);
 
             path = PATH_KEY + mAppWidId;
-            Log.i("activitY:", "pathKEY: " + path);
+
             serviceIntnet.putExtra(WID_ID_KEY,mAppWidId);
             serviceIntnet.putExtra(path,mGifMeta.getFileName());
             getActivity().startService(serviceIntnet);
