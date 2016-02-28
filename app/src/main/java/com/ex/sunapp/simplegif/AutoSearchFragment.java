@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,7 @@ public class AutoSearchFragment extends Fragment {
     private ArrayList<GifMeta> mGifMetaArrayList;
     private RecyclerView mRecyclerView;
     private static final String APP_WID_KEY = "AutoSearchFragment.APP_WID_KEY";
-    private static String PATH_KEY = "com.ex.sunapp.PATH_KEY";
+    private static final String PATH_KEY = "com.ex.sunapp.PATH_KEY";
     private static String WID_ID_KEY = "com.ex.sunapp.WID_ID_KEY";
     private int mAppWidId;
 
@@ -83,6 +84,7 @@ public class AutoSearchFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent i = new Intent();
+            String path;
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity().getApplicationContext());
             RemoteViews views = new RemoteViews(getActivity().getPackageName(),
                     R.layout.widget_template);
@@ -92,9 +94,10 @@ public class AutoSearchFragment extends Fragment {
 
             Intent serviceIntnet = new Intent(getActivity().getApplicationContext(),SimpleGifDecodeService.class);
 
-            PATH_KEY = PATH_KEY + mAppWidId;
+            path = PATH_KEY + mAppWidId;
+            Log.i("activitY:", "pathKEY: " + path);
             serviceIntnet.putExtra(WID_ID_KEY,mAppWidId);
-            serviceIntnet.putExtra(PATH_KEY,mGifMeta.getFileName());
+            serviceIntnet.putExtra(path,mGifMeta.getFileName());
             getActivity().startService(serviceIntnet);
 
             getActivity().setResult(Activity.RESULT_OK, i);

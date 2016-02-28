@@ -7,12 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-/**
- * created to amend the problem of android activityManager reclaiming the widget provider activity, thus
- * reclaiming any broadcast receivers, which means when the user turns the screen on
- * there was nothing there to start the activity
- */
-
 public class GifUserPresentReceiver extends BroadcastReceiver {
 
     BroadcastReceiver screenoffReceiver;
@@ -33,8 +27,10 @@ public class GifUserPresentReceiver extends BroadcastReceiver {
         if (intent.getAction() != null) {
             if(intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
 
-                startGifService1(context);
+                if(!SimpleGifDecodeService.sRunning){
+                    startGifService1(context);
 
+                }
             }
         }
 
@@ -42,6 +38,8 @@ public class GifUserPresentReceiver extends BroadcastReceiver {
 
             @Override
             public void onReceive(Context context, Intent intent) {
+
+
                 if (intent.getAction() != null) {
                     if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
 
@@ -55,9 +53,12 @@ public class GifUserPresentReceiver extends BroadcastReceiver {
                         sleepFilter = new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
-                                startGifService1(context);
+                                context.unregisterReceiver(this);
+                                if(!SimpleGifDecodeService.sRunning)
+                                    startGifService1(context);
                             }
                         };
+
                         context.getApplicationContext().registerReceiver(sleepFilter, onFilter);
                         cleanUpReceivers(context);
                     }
@@ -69,7 +70,7 @@ public class GifUserPresentReceiver extends BroadcastReceiver {
         mIsRegistered = true;
     }
 
-    public void startGifService1(Context context){
+    private void startGifService1(Context context){
 
         int[] wids;
         AppWidgetManager am = AppWidgetManager.getInstance(context);
