@@ -125,12 +125,9 @@ public class AutoSearchFragment extends Fragment {
 
             int mWidth = holder.mIconImage.getWidth();
             int mHeight = holder.mIconImage.getHeight();
-
-            if (mWidth == 0)
-                mWidth = 120;
-
-            if (mHeight == 0)
-                mWidth = 120;
+            
+            mWidth = (mWidth == 0) ? 120 : mWidth;
+            mHeight = (mHeight == 0) ? 120 : mHeight;
 
             GifMeta gm = mGifMetaArrayList.get(position);
             new DecodeBitmapTask(holder.mIconImage, mWidth, mHeight).execute(gm.getFileName());
