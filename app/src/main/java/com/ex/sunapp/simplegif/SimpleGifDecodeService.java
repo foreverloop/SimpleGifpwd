@@ -77,11 +77,17 @@ public class SimpleGifDecodeService extends Service {
                             Toast.LENGTH_LONG).show();
 
                     updateSharedPrefs(mPathMap.get(widgetNo), 0, widno);
-                    mPathMap.remove(widno);
-                    mDelayMap.remove(widno);
-                    mHeightMap.remove(widno);
-                    mWidthMap.remove(widno);
-                    mGifViewMap.remove(widno);
+
+                    if(mPathMap != null)
+                        mPathMap.remove(widno);
+                    if(mDelayMap != null)
+                        mDelayMap.remove(widno);
+                    if(mHeightMap != null)
+                        mHeightMap.remove(widno);
+                    if(mWidthMap != null)
+                        mWidthMap.remove(widno);
+                    if(mGifViewMap != null)
+                        mGifViewMap.remove(widno);
 
                     //no more active gifs
                     if(mPathMap.size() == 0)
@@ -141,11 +147,17 @@ public class SimpleGifDecodeService extends Service {
             if(nonPrim.contains(key))
                 continue;
 
-            mPathMap.remove(key);
-            mHeightMap.remove(key);
-            mWidthMap.remove(key);
-            mDelayMap.remove(key);
-            mGifViewMap.remove(key);
+            if(mPathMap != null)
+                mPathMap.remove(key);
+            if(mDelayMap != null)
+                mDelayMap.remove(key);
+            if(mHeightMap != null)
+                mHeightMap.remove(key);
+            if(mWidthMap != null)
+                mWidthMap.remove(key);
+            if(mGifViewMap != null)
+                mGifViewMap.remove(key);
+
         }
     }
 
